@@ -8,7 +8,7 @@
       class="gerritfilter-button toolbarbutton-1"
       label="Gerrit filter"
       type="button"
-      oncommand="alert('Clicked');"
+      oncommand="GerritFilter.onToolbarButtonCommand(event);"
       />
   </toolbarpalette>
 </overlay>
