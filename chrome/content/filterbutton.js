@@ -53,19 +53,32 @@ var GerritFilter = {
 
   filterFolderMessages: function(folder) {
     this.consoleService.logStringMessage("Filtering folder: " + folder.prettiestName);
+    var messages_to_delete = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
 
     var message_iterator = folder.messages;
     while (message_iterator.hasMoreElements()) {
       var message = message_iterator.getNext().QueryInterface(Ci.nsIMsgDBHdr);
       if (message.isRead) {
+        // consider only unread messages
         continue;
       }
 
       this.consoleService.logStringMessage("iterating message: " + message.subject);
       var body = this.getMessageBodyText(message);
       this.consoleService.logStringMessage("body: " + body);
+
+      if (this.shouldMessageBeDeleted(message, body)) {
+        this.consoleService.logStringMessage("Message will be removed: " + message.subject);
+        messages_to_delete.appendElement(message, false);
+      }
     }
 
+    if (messages_to_delete.length) {
+      this.consoleService.logStringMessage("Deleting " + messages_to_delete.length + " messages");
+      folder.deleteMessages(messages_to_delete, msgWindow, false, false, null, true);
+    } else {
+      this.consoleService.logStringMessage("Not deleting messages");
+    }
   },
 
   getMessageBodyText: function(message) {
@@ -75,6 +88,13 @@ var GerritFilter = {
     var uri = folder.getUriForMsg(message);
     messenger.messageServiceFromURI(uri).streamMessage(uri, listener, null, null, false, "");
     return folder.getMsgTextFromStream(listener.inputStream, message.Charset, 65536, 32768, false, false, {});
+  },
+
+  shouldMessageBeDeleted: function(message, body) {
+    if (body.indexOf("REMOVE") != -1) {
+      return true;
+    }
+    return false;
   }
 };
 
