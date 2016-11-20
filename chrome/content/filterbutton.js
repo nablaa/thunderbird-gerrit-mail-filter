@@ -14,7 +14,10 @@ var GerritFilter = {
 
   onToolbarButtonCommand: function() {
     var folders = this.getFoldersToFilter();
-    this.consoleService.logStringMessage("Folders to filter: " + folders);
+
+    for (var index in folders) {
+      this.filterFolderMessages(folders[index]);
+    }
   },
 
   getPreferencesFolderList: function() {
@@ -46,6 +49,32 @@ var GerritFilter = {
     }
 
     return folders;
+  },
+
+  filterFolderMessages: function(folder) {
+    this.consoleService.logStringMessage("Filtering folder: " + folder.prettiestName);
+
+    var message_iterator = folder.messages;
+    while (message_iterator.hasMoreElements()) {
+      var message = message_iterator.getNext().QueryInterface(Ci.nsIMsgDBHdr);
+      if (message.isRead) {
+        continue;
+      }
+
+      this.consoleService.logStringMessage("iterating message: " + message.subject);
+      var body = this.getMessageBodyText(message);
+      this.consoleService.logStringMessage("body: " + body);
+    }
+
+  },
+
+  getMessageBodyText: function(message) {
+    var messenger = Cc["@mozilla.org/messenger;1"].createInstance(Ci.nsIMessenger);
+    var listener = Cc["@mozilla.org/network/sync-stream-listener;1"].createInstance(Ci.nsISyncStreamListener);
+    var folder = message.folder;
+    var uri = folder.getUriForMsg(message);
+    messenger.messageServiceFromURI(uri).streamMessage(uri, listener, null, null, false, "");
+    return folder.getMsgTextFromStream(listener.inputStream, message.Charset, 65536, 32768, false, false, {});
   }
 };
 
