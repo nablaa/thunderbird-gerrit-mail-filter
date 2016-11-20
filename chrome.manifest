@@ -1,1 +1,6 @@
 content     gerritfilter    chrome/content/
+
+overlay chrome://messenger/content/messenger.xul chrome://gerritfilter/content/filterbutton.xul
+
+skin gerritfilter classic/1.0 chrome/skin/
+style chrome://global/content/customizeToolbar.xul chrome://gerritfilter/skin/overlay.css

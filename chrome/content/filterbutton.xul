@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://gerritfilter/skin/overlay.css" type="text/css" ?>
+
+<overlay id="messengerWindow" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script type="application/x-javascript" src="filterbutton.js" />
+  <toolbarpalette id="MailToolbarPalette">
+    <toolbarbutton id="gerritfilter-button"
+      class="gerritfilter-button toolbarbutton-1"
+      label="Gerrit filter"
+      type="button"
+      oncommand="alert('Clicked');"
+      />
+  </toolbarpalette>
+</overlay>

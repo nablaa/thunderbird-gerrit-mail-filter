@@ -1,0 +1,3 @@
+#gerritfilter-button, [place="palette"] > #gerritfilter-button {
+  list-style-image: url("chrome://gerritfilter/skin/icon.png") !important;
+}
