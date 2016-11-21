@@ -13,6 +13,9 @@ var GerritFilter = {
   },
 
   onToolbarButtonCommand: function() {
+    this.expected_author = this.prefs.getCharPref("from_address");
+    this.labels = this.getPreferencesLabelList();
+    this.users = this.getPreferencesUserList();
     var folders = this.getFoldersToFilter();
 
     for (var index in folders) {
@@ -23,6 +26,16 @@ var GerritFilter = {
   getPreferencesFolderList: function() {
     var folders_comma_separated = this.prefs.getCharPref("folders");
     return folders_comma_separated.split(",");
+  },
+
+  getPreferencesLabelList: function() {
+    var labels_comma_separated = this.prefs.getCharPref("labels");
+    return labels_comma_separated.split(",");
+  },
+
+  getPreferencesUserList: function() {
+    var users_comma_separated = this.prefs.getCharPref("gerrit_users");
+    return users_comma_separated.split(",");
   },
 
   getFoldersToFilter: function() {
@@ -91,11 +104,54 @@ var GerritFilter = {
   },
 
   shouldMessageBeDeleted: function(message, body) {
-    if (body.indexOf("REMOVE") != -1) {
-      return true;
+    return this.messageHasMatchingAuthor(message) && this.messageHasMatchingBodyText(body);
+  },
+
+  messageHasMatchingAuthor: function(message) {
+    return message.author.indexOf(this.expected_author) != -1;
+  },
+
+  messageHasMatchingBodyText: function(body) {
+    if (!this.userInBody(body)) {
+      return false;
     }
+
+    if (!this.patchSetLabelLineInBody(body)) {
+      return false;
+    }
+
+    return true;
+  },
+
+  userInBody: function(body) {
+    for (var index in this.users) {
+      var user = this.users[index];
+
+      if (body.indexOf("From " + user) != -1 &&
+          body.indexOf(user + " has posted comments on this change.") != -1) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+
+  patchSetLabelLineInBody: function(body) {
+    var escape_pattern = function(str) {
+      return str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+    };
+
+    for (var index in this.labels) {
+      var label = this.labels[index];
+      var re = new RegExp("Patch Set \\d+: " + escape_pattern(label), "g");
+      if (body.match(re)) {
+        return true;
+      }
+    }
+
     return false;
   }
+
 };
 
 window.addEventListener("load", function(e) { GerritFilter.onLoad(e); }, false);
