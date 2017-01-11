@@ -83,6 +83,7 @@ var GerritFilter = {
       if (this.shouldMessageBeDeleted(message, body)) {
         this.consoleService.logStringMessage("Message will be removed: " + message.subject);
         messages_to_delete.appendElement(message, false);
+        message.markRead(true);
       }
     }
 
